@@ -24,6 +24,7 @@ public final class ClientPacketHandler {
             data.setBiomass(pkt.biomass);
             data.setWeaponLockTicks(pkt.weaponLockTicks);
             data.setTransformTicks(pkt.transformTicks);
+            data.setTransformCooldownTicks(pkt.transformCooldownTicks);
         });
     }
 }

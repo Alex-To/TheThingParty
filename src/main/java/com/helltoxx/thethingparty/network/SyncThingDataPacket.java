@@ -14,6 +14,7 @@ public class SyncThingDataPacket {
     final int biomass;
     final int weaponLockTicks;
     final int transformTicks;
+    final int transformCooldownTicks;
 
     public SyncThingDataPacket(IThingPlayerData data) {
         this.role = data.getRole().name();
@@ -21,6 +22,7 @@ public class SyncThingDataPacket {
         this.biomass = data.getBiomass();
         this.weaponLockTicks = data.getWeaponLockTicks();
         this.transformTicks = data.getTransformTicks();
+        this.transformCooldownTicks = data.getTransformCooldownTicks();
     }
 
     public SyncThingDataPacket(FriendlyByteBuf buf) {
@@ -29,6 +31,7 @@ public class SyncThingDataPacket {
         this.biomass = buf.readInt();
         this.weaponLockTicks = buf.readInt();
         this.transformTicks = buf.readInt();
+        this.transformCooldownTicks = buf.readInt();
     }
 
     public void toBytes(FriendlyByteBuf buf) {
@@ -37,6 +40,7 @@ public class SyncThingDataPacket {
         buf.writeInt(biomass);
         buf.writeInt(weaponLockTicks);
         buf.writeInt(transformTicks);
+        buf.writeInt(transformCooldownTicks);
     }
 
     public static void handle(SyncThingDataPacket pkt, Supplier<NetworkEvent.Context> ctxSupplier) {

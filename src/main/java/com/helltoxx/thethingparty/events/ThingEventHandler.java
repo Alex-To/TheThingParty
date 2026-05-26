@@ -120,14 +120,24 @@ public class ThingEventHandler {
 
         Player player = event.player;
 
-        // Декремент transformTicks каждый тик. Sync шлём только когда дошли до 0 -
-        // клиенту достаточно знать "идёт ли трансформация", промежуточные значения не нужны.
+        // Декремент transformTicks и transformCooldownTicks каждый тик.
+        // Sync шлём только когда счётчик дошёл до 0 - промежуточные значения клиенту не нужны
+        // (transform играется по animation_length, cooldown проверяется только при запросе).
         player.getCapability(ThingPlayerProvider.THING_DATA).ifPresent(data -> {
+            boolean needSync = false;
+
             if (data.getTransformTicks() > 0) {
                 data.setTransformTicks(data.getTransformTicks() - 1);
-                if (data.getTransformTicks() == 0 && player instanceof ServerPlayer sp) {
-                    NetworkHandler.syncToPlayer(sp);
-                }
+                if (data.getTransformTicks() == 0) needSync = true;
+            }
+
+            if (data.getTransformCooldownTicks() > 0) {
+                data.setTransformCooldownTicks(data.getTransformCooldownTicks() - 1);
+                if (data.getTransformCooldownTicks() == 0) needSync = true;
+            }
+
+            if (needSync && player instanceof ServerPlayer sp) {
+                NetworkHandler.syncToPlayer(sp);
             }
         });
 

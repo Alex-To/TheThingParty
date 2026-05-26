@@ -8,6 +8,7 @@ public class ThingPlayerData implements IThingPlayerData {
     private int biomass = 0;
     private int weaponLockTicks = 0;
     private int transformTicks = 0;
+    private int transformCooldownTicks = 0;
 
     @Override
     public Role getRole() { return role; }
@@ -39,6 +40,11 @@ public class ThingPlayerData implements IThingPlayerData {
     public int getTransformTicks() { return transformTicks; }
     @Override
     public void setTransformTicks(int ticks) { this.transformTicks = ticks; }
+
+    @Override
+    public int getTransformCooldownTicks() { return transformCooldownTicks; }
+    @Override
+    public void setTransformCooldownTicks(int ticks) { this.transformCooldownTicks = ticks; }
 
     @Override
     public void copyFrom(IThingPlayerData source) {

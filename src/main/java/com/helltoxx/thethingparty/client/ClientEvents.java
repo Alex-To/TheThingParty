@@ -2,11 +2,14 @@ package com.helltoxx.thethingparty.client;
 
 import com.helltoxx.thethingparty.capability.IThingPlayerData;
 import com.helltoxx.thethingparty.capability.ThingPlayerProvider;
+import com.helltoxx.thethingparty.network.NetworkHandler;
+import com.helltoxx.thethingparty.network.TransformRequestPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderPlayerEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -50,6 +53,20 @@ public final class ClientEvents {
                 event.getMultiBufferSource(),
                 event.getPackedLight()
         );
+    }
+
+    /**
+     * Клавиша трансформации. consumeClick() возвращает true один раз на каждое нажатие,
+     * поэтому while-цикл корректно обработает все накопленные нажатия (например, после паузы).
+     */
+    @SubscribeEvent
+    public static void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+        if (Minecraft.getInstance().player == null) return;
+
+        while (KeyBindings.TRANSFORM.consumeClick()) {
+            NetworkHandler.INSTANCE.sendToServer(new TransformRequestPacket());
+        }
     }
 
     /**

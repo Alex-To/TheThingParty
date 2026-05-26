@@ -29,6 +29,12 @@ public class NetworkHandler {
                 .decoder(SyncThingDataPacket::new)
                 .consumerMainThread(SyncThingDataPacket::handle)
                 .add();
+
+        INSTANCE.messageBuilder(TransformRequestPacket.class, nextId(), NetworkDirection.PLAY_TO_SERVER)
+                .encoder(TransformRequestPacket::toBytes)
+                .decoder(TransformRequestPacket::new)
+                .consumerMainThread(TransformRequestPacket::handle)
+                .add();
     }
 
     /**

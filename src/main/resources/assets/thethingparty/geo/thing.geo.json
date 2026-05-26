@@ -7,8 +7,8 @@
 				"texture_width": 128,
 				"texture_height": 128,
 				"visible_bounds_width": 4,
-				"visible_bounds_height": 5,
-				"visible_bounds_offset": [0, 0.5, 0]
+				"visible_bounds_height": 1878,
+				"visible_bounds_offset": [0, -936, 0]
 			},
 			"bones": [
 				{
@@ -309,10 +309,10 @@
 				{
 					"name": "meat",
 					"parent": "Controller",
-					"pivot": [-0.0845, -30.81088, -0.29842],
+					"pivot": [-0.0845, -135.81088, -0.29842],
 					"cubes": [
-						{"origin": [-9.5845, -32.56088, -8.79842], "size": [19, 2, 17], "uv": [0, 110]},
-						{"origin": [-8.5845, -30.56088, -7.79842], "size": [17, 1, 15], "uv": [3, 112]}
+						{"origin": [-9.5845, -30000, -8.79842], "size": [19, 2, 17], "uv": [0, 110]},
+						{"origin": [-8.5845, -30000, -7.79842], "size": [17, 1, 15], "uv": [3, 112]}
 					]
 				}
 			]
