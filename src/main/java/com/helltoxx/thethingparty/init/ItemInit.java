@@ -18,4 +18,8 @@ public class ItemInit {
     // 2. Капельница с кровью для пополнения шкалы
     public static final RegistryObject<Item> BLOOD_IV_STAND_ITEM = ITEMS.register("blood_iv_stand",
             () -> new BlockItem(BlockInit.BLOOD_IV_STAND.get(), new Item.Properties()));
+
+    // 3. Item-форма блока эвакуации (для постановки оператором в creative).
+    public static final RegistryObject<Item> EVACUATION_ZONE_ITEM = ITEMS.register("evacuation_zone",
+            () -> new BlockItem(BlockInit.EVACUATION_ZONE.get(), new Item.Properties()));
 }

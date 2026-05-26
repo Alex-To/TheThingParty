@@ -17,5 +17,6 @@ public class CreativeTabInit {
                     .displayItems((parameters, output) -> {
                         output.accept(ItemInit.HEAVY_CANISTER.get());
                         output.accept(ItemInit.BLOOD_IV_STAND_ITEM.get());
+                        output.accept(ItemInit.EVACUATION_ZONE_ITEM.get());
                     }).build());
 }
