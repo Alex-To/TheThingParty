@@ -26,3 +26,19 @@ mandatory=true
 versionRange="[1.20.1,1.21)"
 ordering="NONE"
 side="BOTH"
+
+# Corpse - используется напрямую в ThingEventHandler (de.maxhenkel.corpse.entities.CorpseEntity)
+[[dependencies.thethingparty]]
+modId="corpse"
+mandatory=true
+versionRange="[1.0,)"
+ordering="AFTER"
+side="BOTH"
+
+# GeckoLib - рендер модели Нечто (GeoModel, GeoAnimatable, GeoReplacedEntityRenderer)
+[[dependencies.thethingparty]]
+modId="geckolib"
+mandatory=true
+versionRange="[4.7,)"
+ordering="AFTER"
+side="BOTH"

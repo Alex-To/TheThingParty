@@ -1,18 +1,18 @@
 package com.helltoxx.thethingparty.network;
 
 import com.helltoxx.thethingparty.capability.IThingPlayerData;
-import com.helltoxx.thethingparty.capability.ThingPlayerProvider;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
 public class SyncThingDataPacket {
-    private final String role;
-    private final boolean isMonsterForm;
-    private final int biomass;
-    private final int weaponLockTicks;
+    final String role;
+    final boolean isMonsterForm;
+    final int biomass;
+    final int weaponLockTicks;
 
     public SyncThingDataPacket(IThingPlayerData data) {
         this.role = data.getRole().name();
@@ -35,19 +35,9 @@ public class SyncThingDataPacket {
         buf.writeInt(weaponLockTicks);
     }
 
-    public boolean handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context context = supplier.get();
-        context.enqueueWork(() -> {
-            // Выполняем на клиенте
-            if (Minecraft.getInstance().player != null) {
-                Minecraft.getInstance().player.getCapability(ThingPlayerProvider.THING_DATA).ifPresent(data -> {
-                    data.setRole(IThingPlayerData.Role.valueOf(role));
-                    data.setMonsterForm(isMonsterForm);
-                    data.setBiomass(biomass);
-                    data.setWeaponLockTicks(weaponLockTicks);
-                });
-            }
-        });
-        return true;
+    public static void handle(SyncThingDataPacket pkt, Supplier<NetworkEvent.Context> ctxSupplier) {
+        // consumerMainThread в SimpleChannel уже выполняет enqueueWork + setPacketHandled.
+        // Клиентский класс грузим через DistExecutor, чтобы dedicated-сервер не упал на net.minecraft.client.*
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientPacketHandler.applySync(pkt));
     }
 }

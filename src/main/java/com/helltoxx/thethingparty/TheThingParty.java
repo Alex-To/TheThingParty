@@ -1,12 +1,12 @@
 package com.helltoxx.thethingparty;
 
 import com.helltoxx.thethingparty.network.NetworkHandler;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
+import software.bernie.geckolib.GeckoLib;
 
 // Аннотация @Mod говорит Форджу: "Этот класс - главный для мода thethingparty"
 // Имя здесь ДОЛЖНО совпадать с mod_id из gradle.properties и mods.toml
@@ -27,12 +27,11 @@ public class TheThingParty {
 
 
         // Подписываем метод commonSetup на шину событий мода
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::commonSetup);
-
-        // Регистрируем наш класс в главной шине событий Forge
-        MinecraftForge.EVENT_BUS.register(this);
         bus.addListener(this::commonSetup);
-        MinecraftForge.EVENT_BUS.register(this);
+
+        // Обязательная инициализация GeckoLib (регистрирует reload-listener для моделей/анимаций
+        // на клиенте и сетевые пакеты GeckoLib).
+        GeckoLib.initialize();
     }
 
     // Метод, который срабатывает во время общей настройки игры

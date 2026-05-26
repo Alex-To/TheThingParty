@@ -1,7 +1,9 @@
 package com.helltoxx.thethingparty.events;
 
 import com.helltoxx.thethingparty.capability.ThingPlayerProvider;
+import com.helltoxx.thethingparty.network.NetworkHandler;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
@@ -31,6 +33,29 @@ public class ModEvents {
                     newStore.copyFrom(oldStore);
                 });
             });
+        }
+    }
+
+    // Синхронизируем capability на клиент при коннекте / респавне / смене измерения.
+    // Без этого LocalPlayer ничего не знает о ServerPlayer-данных, и клиентский рендер/HUD не сработает.
+    @SubscribeEvent
+    public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer sp) {
+            NetworkHandler.syncToPlayer(sp);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        if (event.getEntity() instanceof ServerPlayer sp) {
+            NetworkHandler.syncToPlayer(sp);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (event.getEntity() instanceof ServerPlayer sp) {
+            NetworkHandler.syncToPlayer(sp);
         }
     }
 }
