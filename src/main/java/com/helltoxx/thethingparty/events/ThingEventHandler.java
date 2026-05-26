@@ -129,6 +129,17 @@ public class ThingEventHandler {
             if (data.getTransformTicks() > 0) {
                 data.setTransformTicks(data.getTransformTicks() - 1);
                 if (data.getTransformTicks() == 0) needSync = true;
+
+                // Замораживаем игрока во время трансформации: обнуляем горизонтальную скорость
+                // (Y оставляем — гравитация должна работать) и накладываем экстремальный slowness
+                // как страховку от модифицированных клиентов. Прыжок блокируем JUMP -128.
+                // duration = 3 тика, чтобы эффект гарантированно действовал до следующего тика
+                // и не залипал после окончания трансформации.
+                Vec3 v = player.getDeltaMovement();
+                player.setDeltaMovement(0.0, Math.min(v.y, 0.0), 0.0);
+                player.hurtMarked = true; // принудительная sync скорости клиенту
+                player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 3, 255, false, false, false));
+                player.addEffect(new MobEffectInstance(MobEffects.JUMP, 3, -128, false, false, false));
             }
 
             if (data.getTransformCooldownTicks() > 0) {

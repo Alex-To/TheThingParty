@@ -5,9 +5,11 @@ import com.helltoxx.thethingparty.capability.ThingPlayerProvider;
 import com.helltoxx.thethingparty.network.NetworkHandler;
 import com.helltoxx.thethingparty.network.TransformRequestPacket;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.MovementInputUpdateEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -67,6 +69,35 @@ public final class ClientEvents {
         while (KeyBindings.TRANSFORM.consumeClick()) {
             NetworkHandler.INSTANCE.sendToServer(new TransformRequestPacket());
         }
+    }
+
+    /**
+     * Блокировка ввода движения на время трансформации.
+     * {@code MovementInputUpdateEvent} приходит после того, как клавиатура заполнила Input,
+     * но до того, как Input влияет на физику — поэтому достаточно обнулить все поля.
+     * Сервер дополнительно гасит горизонтальную скорость в {@link com.helltoxx.thethingparty.events.ThingEventHandler}
+     * как страховка от модифицированного клиента.
+     */
+    @SubscribeEvent
+    public static void onMovementInputUpdate(MovementInputUpdateEvent event) {
+        LocalPlayer lp = Minecraft.getInstance().player;
+        if (lp == null) return;
+        if (event.getEntity() != lp) return;
+
+        int transformTicks = lp.getCapability(ThingPlayerProvider.THING_DATA)
+                .map(IThingPlayerData::getTransformTicks)
+                .orElse(0);
+        if (transformTicks <= 0) return;
+
+        var input = event.getInput();
+        input.forwardImpulse = 0f;
+        input.leftImpulse = 0f;
+        input.up = false;
+        input.down = false;
+        input.left = false;
+        input.right = false;
+        input.jumping = false;
+        input.shiftKeyDown = false;
     }
 
     /**

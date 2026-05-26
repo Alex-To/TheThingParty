@@ -16,6 +16,10 @@ import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.core.object.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 /**
  * Singleton GeoAnimatable, представляющий "виртуальное" Нечто, рендерящееся на месте игрока.
  *
@@ -39,6 +43,16 @@ public final class ThingAnimatable implements GeoAnimatable {
     private static final RawAnimation TRANSFORM = RawAnimation.begin().thenPlay("animation.thing.transform");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+
+    /**
+     * Хранит transformTicks из предыдущего вызова actionPredicate per-player, чтобы детектить
+     * rising edge (0 -> >0). При rising edge принудительно ресетим контроллер - иначе GeckoLib
+     * считает, что TRANSFORM ещё "последняя анимация" (она в STOPPED), и не перезапускает её
+     * при повторном setAnimation с той же RawAnimation-ссылкой.
+     *
+     * Утечка ключей при отключении игроков незначительная для MVP лобби (5-15 человек).
+     */
+    private final Map<UUID, Integer> prevTransformTicks = new HashMap<>();
 
     private ThingAnimatable() {}
 
@@ -73,13 +87,21 @@ public final class ThingAnimatable implements GeoAnimatable {
         IThingPlayerData data = player.getCapability(ThingPlayerProvider.THING_DATA).orElse(null);
         if (data == null) return PlayState.STOP;
 
+        AnimationController<ThingAnimatable> controller = state.getController();
+        int curTransformTicks = data.getTransformTicks();
+        int prev = prevTransformTicks.getOrDefault(player.getUUID(), 0);
+        prevTransformTicks.put(player.getUUID(), curTransformTicks);
+
         // 1) Трансформация - наивысший приоритет. Пока transformTicks > 0, держим анимацию.
-        if (data.getTransformTicks() > 0) {
+        if (curTransformTicks > 0) {
+            // Rising edge (0 -> >0): принудительно ресетим, иначе после первой трансформации
+            // controller остаётся в STOPPED с last=TRANSFORM, и setAnimation(TRANSFORM) ничего не делает.
+            if (prev <= 0) {
+                controller.forceAnimationReset();
+            }
             state.setAnimation(TRANSFORM);
             return PlayState.CONTINUE;
         }
-
-        AnimationController<ThingAnimatable> controller = state.getController();
 
         // 2) Если предыдущая one-shot (attack/transform) ещё доигрывается - не перебиваем.
         if (controller.getCurrentAnimation() != null && !controller.hasAnimationFinished()) {
