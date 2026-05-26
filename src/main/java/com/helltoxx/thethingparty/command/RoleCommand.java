@@ -95,6 +95,9 @@ public class RoleCommand {
 
         cap.ifPresent(data -> {
             data.setMonsterForm(monsterForm);
+            // 100 тиков = 5 секунд, под длину animation.thing.transform.
+            // При обратном переходе (monster -> human) обнуляем, чтобы анимация не цеплялась.
+            data.setTransformTicks(monsterForm ? 100 : 0);
             String label = monsterForm ? "Нечто (монстр)" : "Человек";
             context.getSource().sendSuccess(() -> Component.literal("§a[The Thing Party] Форма изменена: " + label), false);
         });

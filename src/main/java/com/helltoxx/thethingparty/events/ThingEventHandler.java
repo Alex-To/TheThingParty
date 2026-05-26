@@ -1,10 +1,12 @@
 package com.helltoxx.thethingparty.events;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import com.helltoxx.thethingparty.capability.IThingPlayerData;
 import com.helltoxx.thethingparty.capability.ThingPlayerProvider;
+import com.helltoxx.thethingparty.network.NetworkHandler;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
@@ -117,6 +119,17 @@ public class ThingEventHandler {
         if (event.side.isClient() || event.phase != TickEvent.Phase.END) return;
 
         Player player = event.player;
+
+        // Декремент transformTicks каждый тик. Sync шлём только когда дошли до 0 -
+        // клиенту достаточно знать "идёт ли трансформация", промежуточные значения не нужны.
+        player.getCapability(ThingPlayerProvider.THING_DATA).ifPresent(data -> {
+            if (data.getTransformTicks() > 0) {
+                data.setTransformTicks(data.getTransformTicks() - 1);
+                if (data.getTransformTicks() == 0 && player instanceof ServerPlayer sp) {
+                    NetworkHandler.syncToPlayer(sp);
+                }
+            }
+        });
 
         // Выполняем проверку не каждый тик, а раз в 20 тиков (каждую 1 секунду), чтобы не грузить сервер
         if (player.tickCount % 20 == 0) {

@@ -19,6 +19,13 @@ public interface IThingPlayerData {
     void setWeaponLockTicks(int ticks);
     void decreaseWeaponLockTicks();
 
+    /**
+     * Тики, оставшиеся на проигрывание анимации трансформации в Нечто-монстра.
+     * Транзитивно (не сохраняется в NBT, не копируется при респавне).
+     */
+    int getTransformTicks();
+    void setTransformTicks(int ticks);
+
     void copyFrom(IThingPlayerData source);
     void saveNBTData(CompoundTag nbt);
     void loadNBTData(CompoundTag nbt);

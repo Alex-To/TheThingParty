@@ -23,6 +23,7 @@ public final class ClientPacketHandler {
             data.setMonsterForm(pkt.isMonsterForm);
             data.setBiomass(pkt.biomass);
             data.setWeaponLockTicks(pkt.weaponLockTicks);
+            data.setTransformTicks(pkt.transformTicks);
         });
     }
 }

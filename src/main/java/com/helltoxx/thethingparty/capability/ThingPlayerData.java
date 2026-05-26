@@ -7,6 +7,7 @@ public class ThingPlayerData implements IThingPlayerData {
     private boolean isMonsterForm = false;
     private int biomass = 0;
     private int weaponLockTicks = 0;
+    private int transformTicks = 0;
 
     @Override
     public Role getRole() { return role; }
@@ -35,11 +36,17 @@ public class ThingPlayerData implements IThingPlayerData {
     }
 
     @Override
+    public int getTransformTicks() { return transformTicks; }
+    @Override
+    public void setTransformTicks(int ticks) { this.transformTicks = ticks; }
+
+    @Override
     public void copyFrom(IThingPlayerData source) {
         this.role = source.getRole();
         this.isMonsterForm = source.isMonsterForm();
         this.biomass = source.getBiomass();
         this.weaponLockTicks = source.getWeaponLockTicks();
+        // transformTicks НЕ копируем - переходное состояние, при респавне должно быть 0.
     }
 
     @Override

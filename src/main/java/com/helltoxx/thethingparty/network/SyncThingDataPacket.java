@@ -13,12 +13,14 @@ public class SyncThingDataPacket {
     final boolean isMonsterForm;
     final int biomass;
     final int weaponLockTicks;
+    final int transformTicks;
 
     public SyncThingDataPacket(IThingPlayerData data) {
         this.role = data.getRole().name();
         this.isMonsterForm = data.isMonsterForm();
         this.biomass = data.getBiomass();
         this.weaponLockTicks = data.getWeaponLockTicks();
+        this.transformTicks = data.getTransformTicks();
     }
 
     public SyncThingDataPacket(FriendlyByteBuf buf) {
@@ -26,6 +28,7 @@ public class SyncThingDataPacket {
         this.isMonsterForm = buf.readBoolean();
         this.biomass = buf.readInt();
         this.weaponLockTicks = buf.readInt();
+        this.transformTicks = buf.readInt();
     }
 
     public void toBytes(FriendlyByteBuf buf) {
@@ -33,6 +36,7 @@ public class SyncThingDataPacket {
         buf.writeBoolean(isMonsterForm);
         buf.writeInt(biomass);
         buf.writeInt(weaponLockTicks);
+        buf.writeInt(transformTicks);
     }
 
     public static void handle(SyncThingDataPacket pkt, Supplier<NetworkEvent.Context> ctxSupplier) {
