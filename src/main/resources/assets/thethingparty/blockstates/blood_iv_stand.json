@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "has_blood=true": {
+      "model": "thethingparty:block/blood_iv_stand_full"
+    },
+    "has_blood=false": {
+      "model": "thethingparty:block/blood_iv_stand_empty"
+    }
+  }
+}

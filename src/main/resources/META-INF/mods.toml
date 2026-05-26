@@ -1,0 +1,28 @@
+modLoader="javafml" # Загрузчик модов
+loaderVersion="[47,)" # Версия загрузчика (47.x.x - это для Forge 1.20.1)
+license="MIT"
+
+[[mods]]
+modId="thethingparty"
+version="1.0.0"
+displayName="The Thing Party"
+authors="HellToxx"
+description='''
+Мод от HellToxx. Добро пожаловать в The Thing Party!
+'''
+
+# Зависимость от Forge
+[[dependencies.thethingparty]]
+modId="forge"
+mandatory=true
+versionRange="[47,)"
+ordering="NONE"
+side="BOTH"
+
+# Зависимость от самого Minecraft
+[[dependencies.thethingparty]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1,1.21)"
+ordering="NONE"
+side="BOTH"
