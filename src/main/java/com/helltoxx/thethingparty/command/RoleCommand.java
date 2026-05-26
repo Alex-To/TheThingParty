@@ -3,7 +3,7 @@ package com.helltoxx.thethingparty.command;
 import com.helltoxx.thethingparty.capability.IThingPlayerData;
 import com.helltoxx.thethingparty.capability.ThingPlayerProvider;
 import com.helltoxx.thethingparty.network.NetworkHandler;
-import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
@@ -11,40 +11,32 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import org.slf4j.Logger;
 
-// Аннотация автоматически зарегистрирует этот класс в шине событий Forge
-@Mod.EventBusSubscriber(modid = "thethingparty", bus = Mod.EventBusSubscriber.Bus.FORGE)
-public class RoleCommand {
+/**
+ * Debug-команды управления ролью и формой конкретного игрока.
+ * Регистрируется через {@link CommandRegistry#onCommandsRegister}.
+ *
+ *   /thingparty setrole &lt;thing|human&gt;
+ *   /thingparty form    &lt;monster|human&gt;
+ */
+public final class RoleCommand {
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    // Событие регистрации команд сервера
-    @SubscribeEvent
-    public static void onCommandsRegister(RegisterCommandsEvent event) {
-        CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
+    private RoleCommand() {}
 
-        // Строим структуру команды:
-        //   /thingparty setrole <thing/human>
-        //   /thingparty form <monster/human>  - временная команда для теста рендера (этап 1)
-        dispatcher.register(Commands.literal("thingparty")
-                // requires(2) означает, что команду могут вводить только операторы сервера (или игроки с читами)
-                .requires(source -> source.hasPermission(2))
+    public static void append(LiteralArgumentBuilder<CommandSourceStack> root) {
+        root
                 .then(Commands.literal("setrole")
                         .then(Commands.literal("thing")
-                                .executes(context -> setPlayerRole(context, IThingPlayerData.Role.THING)))
+                                .executes(ctx -> setPlayerRole(ctx, IThingPlayerData.Role.THING)))
                         .then(Commands.literal("human")
-                                .executes(context -> setPlayerRole(context, IThingPlayerData.Role.HUMAN)))
-                )
+                                .executes(ctx -> setPlayerRole(ctx, IThingPlayerData.Role.HUMAN))))
                 .then(Commands.literal("form")
                         .then(Commands.literal("monster")
-                                .executes(context -> setMonsterForm(context, true)))
+                                .executes(ctx -> setMonsterForm(ctx, true)))
                         .then(Commands.literal("human")
-                                .executes(context -> setMonsterForm(context, false)))
-                )
-        );
+                                .executes(ctx -> setMonsterForm(ctx, false))));
     }
 
     // Логика, которая выполняется при вводе команды

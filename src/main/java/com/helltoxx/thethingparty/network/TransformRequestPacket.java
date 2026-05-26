@@ -2,6 +2,7 @@ package com.helltoxx.thethingparty.network;
 
 import com.helltoxx.thethingparty.capability.IThingPlayerData;
 import com.helltoxx.thethingparty.capability.ThingPlayerProvider;
+import com.helltoxx.thethingparty.game.GameState;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -42,6 +43,11 @@ public class TransformRequestPacket {
     private static void tryTransform(ServerPlayer player, IThingPlayerData data) {
         if (data.getRole() != IThingPlayerData.Role.THING) {
             player.sendSystemMessage(Component.literal("§c[The Thing Party] Ты не Нечто."));
+            return;
+        }
+
+        if (GameState.get().isThingAbilityBlocked()) {
+            player.sendSystemMessage(Component.literal("§c[The Thing Party] Способности заблокированы (Фаза Форы)."));
             return;
         }
 
