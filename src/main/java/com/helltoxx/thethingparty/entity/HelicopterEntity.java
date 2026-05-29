@@ -165,6 +165,7 @@ public class HelicopterEntity extends Entity implements GeoAnimatable {
     public static class HelicopterRenderer extends software.bernie.geckolib.renderer.GeoEntityRenderer<HelicopterEntity> {
         public HelicopterRenderer(net.minecraft.client.renderer.entity.EntityRendererProvider.Context context) {
             super(context, new HelicopterGeoModel());
+            withScale(3.0f);
         }
     }
 }
