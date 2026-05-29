@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    { "item": "minecraft:tnt" },
+    { "item": "tacz:gun_smith_table" }
+  ],
+  "result": {
+    "item": "tacz:workbench_a",
+    "nbt": {
+      "BlockId": "bf1:telegraph"
+    }
+  }
+}

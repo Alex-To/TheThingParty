@@ -1,0 +1,84 @@
+{
+  "ammo": "bf1:fuel",
+  "rpm": 666,
+  "bullet": {
+    "life": 0.6,
+    "bullet_amount": 6,
+    "extra_damage": {
+      "armor_ignore": 0.9,
+      "head_shot_multiplier": 1,
+      "damage_adjust": [
+        {"distance": 32,"damage": 5.4},
+        {"distance": "infinite","damage": 4.8}
+      ]
+    },
+    "speed": 28,
+    "gravity": 0,
+    "knockback": 0.1,
+    "friction": 0.22,
+    "ignite": {
+      "entity": true,
+      "block": false
+    },
+    "ignite_entity_time": 10,
+    "pierce": 6
+  },
+  "ammo_amount": 240,
+  "bolt": "open_bolt",
+  "reload": {
+    "type": "fuel",
+    "feed": {
+      "empty": 4.5,
+      "tactical": 4.5
+    },
+    "cooldown": {
+      "empty": 5.2,
+      "tactical": 5.2
+    }
+  },
+  "draw_time": 0.5,
+  "put_away_time": 0.5,
+  "aim_time": 0.12,
+  "sprint_time": 0.15,
+  "weight": 19.5,
+  "movement_speed": {
+    "base": 0.25,
+    "aim": 0.1,
+    "reload": 0.2
+  },
+  "heat":  {
+    "max": 80,
+    "per_shot": 1,
+    "cooling_multiplier": 10,
+    "cooling_delay": 200,
+    "over_heat_time": 2500,
+    "min_inaccuracy": 1,
+    "max_inaccuracy": 1,
+    "min_rpm_mod": 1,
+    "max_rpm_mod": 1
+  },
+  "fire_mode": [
+    "auto"
+  ],
+  "allow_attachment_types": [
+ //   "extended_mag"
+  ],
+  "recoil": {
+    "pitch": [
+      {"time": 0,"value": [ -0.2, 0.2 ]},
+      {"time": 0.25,"value": [ 0, 0 ]}
+    ],
+    "yaw": [
+      {"time": 0,"value": [ -0.25, 0.25 ]},
+      {"time": 0.3,"value": [ -0.1, 0.1 ]}
+    ]
+  },
+  "inaccuracy": {
+    "stand": 3,
+    "move": 3,
+    "sneak": 3,
+    "lie": 3,
+    "aim": 3
+  }
+//  "script": "bf1:preheat_logic"
+}

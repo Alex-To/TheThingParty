@@ -1,0 +1,100 @@
+{
+  "ammo": "tacz:45acp",
+  "ammo_amount": 7,
+  "extended_mag_ammo_amount": [
+    9,
+    12,
+    14
+  ],
+  "bolt": "manual_action",
+  "rpm": 450,
+  "bullet": {
+    "life": 1,
+    "bullet_amount": 1,
+    "tracer_count_interval": 0,
+    "extra_damage": {
+      "armor_ignore": 0.2,
+      "head_shot_multiplier": 1.75,
+      "damage_adjust": [
+        {"distance": 32, "damage": 12},
+        {"distance": 40, "damage": 11},
+        {"distance": 48, "damage": 10},
+        {"distance": 56, "damage": 9},
+        {"distance": 64, "damage": 8},
+        {"distance": 72, "damage": 7},
+        {"distance": "infinite", "damage": 6}
+      ]
+    },
+    "speed": 180,
+    "gravity": 0.15,
+    "knockback": 0.15,
+    "friction": 0.015,
+    "ignite": false,
+    "pierce": 1
+  },
+  "reload": {
+    "type": "magazine",
+    "feed": {
+      "empty": 1.8,
+      "tactical": 1.45
+    },
+    "cooldown": {
+      "empty": 3.3,
+      "tactical": 2.55
+    }
+  },
+  "draw_time": 0.4,
+  "put_away_time": 0.43,
+  "aim_time": 0.11,
+  "sprint_time": 0.2,
+  "bolt_action_time": 0.25,
+  "weight": 3.74,
+  "movement_speed": {
+    "base": 0.0,
+    "aim": -0.1,
+    "reload": 0.0
+  },
+  "crawl_recoil_multiplier": 0.25,
+  "fire_mode": [
+    "semi"
+  ],
+  "recoil": {
+    "pitch": [
+      {"time": 0, "value": [0.75, 1]},
+      {"time": 0.1, "value": [0.75, 0.75]},
+      {"time": 0.3, "value": [-0.25, 0]},
+      {"time": 0.4, "value": [0, 0]}
+    ],
+    "yaw": [
+      {"time": 0, "value": [-0.15, 0.15]},
+      {"time": 0.17, "value": [0, 0]}
+    ]
+  },
+  "inaccuracy": {
+    "stand": 2.25,
+    "move": 3,
+    "sneak": 1.68,
+    "lie": 1.35,
+    "aim": 0.04
+  },
+  "melee": {
+    "distance": 1,
+    "cooldown": 1.0,
+    "default": {
+      "animation_type": "melee_stock",
+      "distance": 1.5,
+      "range_angle": 30,
+      "damage": 6,
+      "knockback": 1.2,
+      "prep": 0.42
+    }
+  },
+  "fire_sound": {
+    "fire_multiplier": 0.25,
+    "silence_multiplier": 0.25
+  },
+  "allow_attachment_types": [
+    "extended_mag",
+    "scope"
+  ]
+}

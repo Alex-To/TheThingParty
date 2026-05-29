@@ -17,7 +17,7 @@ import java.util.function.Supplier;
  */
 public class TransformRequestPacket {
     /** Стоимость трансформации человек -> монстр (биомасса). */
-    public static final int TRANSFORM_BIOMASS_COST = 30;
+    public static final int TRANSFORM_BIOMASS_COST = 45;
     /** Длительность анимации трансформации в тиках (5 секунд). */
     public static final int TRANSFORM_DURATION_TICKS = 100;
     /** Кулдаун после трансформации в любую сторону (10 секунд). */

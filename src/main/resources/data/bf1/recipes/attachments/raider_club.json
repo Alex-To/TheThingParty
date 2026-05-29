@@ -1,0 +1,26 @@
+{
+  "materials": [
+    {
+      "item": {
+        "item": "minecraft:netherite_sword"
+      }
+    }, 
+    {
+      "item": {
+        "tag": "forge:obsidian"
+      },
+      "count": 8
+    }, 
+    {
+      "item": {
+        "item": "minecraft:pointed_dripstone"
+      },
+      "count": 12
+    }
+  ],
+  "result": {
+    "type": "attachment",
+    "id": "bf1:raider_club"
+  },
+  "type": "tacz:gun_smith_table_crafting"
+}

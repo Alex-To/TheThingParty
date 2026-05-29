@@ -1,0 +1,120 @@
+{
+  "ammo": "tacz:762x54",
+  "ammo_amount": 5,
+  "bolt": "closed_bolt",
+  "rpm": 59,
+  "bullet": {
+    "life": 1,
+    "bullet_amount": 1,
+    "tracer_count_interval": 0,
+    "extra_damage": {
+      "armor_ignore": 0.5,
+      "head_shot_multiplier": 2,
+      "damage_adjust": [
+        {"distance": 60, "damage": 21},
+        {"distance": 75, "damage": 20},
+        {"distance": 90, "damage": 19},
+        {"distance": "infinite", "damage": 16}
+      ]
+    },
+    "speed": 300,
+    "gravity": 0.15,
+    "knockback": 0.2,
+    "friction": 0.01,
+    "ignite": false,
+    "pierce": 2
+  },
+  "reload": {
+    "type": "magazine",
+    "feed": {
+      "empty": 1.27,
+      "tactical": 1.27
+    },
+    "cooldown": {
+      "empty": 3,
+      "tactical": 2.4
+    }
+  },
+  "draw_time": 0.47,
+  "put_away_time": 0.5,
+  "aim_time": 0.12,
+  "sprint_time": 0.22,
+  "bolt_action_time": 0.3,
+  "weight": 5,
+  "movement_speed": {
+    "base": 0.0,
+    "aim": -0.1,
+    "reload": -0.1
+  },
+  "crawl_recoil_multiplier": 0.2,
+  "fire_mode": [
+    "semi",
+    "burst"
+  ],
+  "fire_mode_adjust": {
+     "burst": {
+       "damage": -5,
+       "rpm": 240,
+       "speed": 0,
+       "knockback": -0.1,
+       "armor_ignore": 0,
+       "head_shot_multiplier": -0.25,
+       "aim_inaccuracy": 0.15,
+       "other_inaccuracy": 0
+     }
+  },
+  "burst_data": {
+    "continuous_shoot": false,
+    "count": 1,
+    "bpm": 900,
+    "min_interval": 0.2
+  },
+  "recoil": {
+    "pitch": [
+      {"time": 0, "value": [1.25, 1.5]},
+      {"time": 0.26, "value": [1.25, 1.5]},
+      {"time": 0.36, "value": [0.25, 0.25]},
+      {"time": 0.42, "value": [0, 0]}
+    ],
+    "yaw": [
+      {"time": 0, "value": [-0.5, 0.35]},
+      {"time": 0.05, "value": [-0.25, 0.25]},
+      {"time": 0.25, "value": [0, 0]}
+    ]
+  },
+  "inaccuracy": {
+    "stand": 3,
+    "move": 4.5,
+    "sneak": 2,
+    "lie": 2,
+    "aim": 0.05
+  },
+  "melee": {
+    "distance": 1,
+    "cooldown": 0.65,
+    "default": {
+      "animation_type": "melee_stock",
+      "distance": 1.25,
+      "range_angle": 30,
+      "damage": 2,
+      "knockback": 0.6,
+      "prep": 0.1
+    }
+  },
+  "allow_attachment_types": [
+    "scope",
+    "grip",
+    "muzzle"
+  ],
+  "script": "bf1:clip_gun_logic",
+  "script_param": {
+    "bolt_time": 0.8,
+    "bolt_feed_time": 0.67,
+    "intro_empty": 3.43,
+    "intro": 1,
+    "loop": 0.43,
+    "ending": 1,
+    "intro_empty_feed": 2.07,
+    "loop_feed": 0.23
+  }
+}

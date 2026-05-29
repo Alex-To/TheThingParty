@@ -1,0 +1,21 @@
+{
+  "materials": [
+    {
+      "item": {
+        "tag": "minecraft:logs"
+      },
+      "count": 2
+    },
+    {
+      "item": {
+        "item": "minecraft:tnt"
+      },
+      "count": 1
+    }
+  ],
+  "result": {
+    "type": "gun",
+    "id": "bf1:lunge_mine"
+  },
+  "type": "tacz:gun_smith_table_crafting"
+}

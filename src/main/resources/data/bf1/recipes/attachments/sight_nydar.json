@@ -1,0 +1,27 @@
+{
+  "materials": [
+    {
+      "item": {
+        "tag": "forge:ingots/iron"
+      },
+      "count": 8
+    },
+    {
+      "item": {
+        "tag": "forge:dusts/glowstone"
+      },
+      "count": 4
+    },
+    {
+      "item": {
+        "tag": "forge:glass"
+      },
+      "count": 2
+    }
+  ],
+  "result": {
+    "type": "attachment",
+    "id": "bf1:sight_nydar"
+  },
+  "type": "tacz:gun_smith_table_crafting"
+}

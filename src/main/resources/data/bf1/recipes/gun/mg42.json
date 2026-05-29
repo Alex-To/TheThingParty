@@ -1,0 +1,33 @@
+{
+  "materials": [
+    {
+      "item": {
+        "item": "minecraft:nether_star"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "tag": "forge:ingots/netherite"
+      },
+      "count": 4
+    },
+    {
+      "item": {
+        "tag": "minecraft:logs"
+      },
+      "count": 64
+    },
+    {
+      "item": {
+        "tag": "forge:ingots/iron"
+      },
+      "count": 320
+    }
+  ],
+  "result": {
+    "type": "gun",
+    "id": "bf1:mg42"
+  },
+  "type": "tacz:gun_smith_table_crafting"
+}

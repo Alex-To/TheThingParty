@@ -1,0 +1,30 @@
+{
+  "materials": [
+    {
+      "item": {
+        "tag": "minecraft:logs"
+      },
+      "count": 12
+    },
+    {
+      "item": {
+        "tag": "forge:ingots/iron"
+      },
+      "count": 32
+    },
+    {
+      "item": {
+        "tag": "forge:leather"
+      },
+      "count": 6
+    }
+  ],
+  "result": {
+    "type": "gun",
+    "id": "bf1:chauchat",
+    "attachments": {
+      "stock": "tacz:oem_stock_heavy"
+    }
+  },
+  "type": "tacz:gun_smith_table_crafting"
+}

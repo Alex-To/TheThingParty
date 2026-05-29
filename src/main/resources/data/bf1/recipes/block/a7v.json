@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    { 
+      "type": "forge:nbt",
+      "item": "tacz:workbench_c",
+      "nbt": {
+        "BlockId": "bf1:st_chamond"
+      }
+     }
+  ],
+  "result": {
+    "item": "tacz:workbench_c",
+    "nbt": {
+      "BlockId": "bf1:a7v"
+    }
+  }
+}

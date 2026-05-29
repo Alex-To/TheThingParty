@@ -1,0 +1,27 @@
+{
+  "materials": [
+    {
+      "item": {
+        "tag": "forge:ingots/iron"
+      },
+      "count": 128
+    },
+    {
+      "item": {
+        "tag": "forge:gems/lapis"
+      },
+      "count": 16
+    },
+    {
+      "item": {
+        "tag": "forge:rods/blaze"
+      },
+      "count": 9
+    }
+  ],
+  "result": {
+    "type": "gun",
+    "id": "bf1:f_faust"
+  },
+  "type": "tacz:gun_smith_table_crafting"
+}

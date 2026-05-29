@@ -1,0 +1,37 @@
+{
+  "materials": [
+    {
+      "item": {
+        "tag": "forge:ingots/iron"
+      },
+      "count": 8
+    },
+    {
+      "item": {
+        "item": "minecraft:flint"
+      },
+      "count": 2
+    },
+    {
+      "item": {
+        "tag": "forge:leather"
+      },
+      "count": 2
+    },
+    {
+      "item": {
+        "tag": "forge:slimeballs"
+      },
+      "count": 3
+    }
+  ],
+  "result": {
+    "type": "gun",
+    "id": "bf1:ef46",
+    "nbt": {
+      "DummyAmmo": 0
+    },
+    "ammo_count": 80
+  },
+  "type": "tacz:gun_smith_table_crafting"
+}

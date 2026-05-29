@@ -66,7 +66,7 @@ public class ThingEventHandler {
                             !targetData.isMonsterForm()) {
 
                         // Накладываем статус вины (Weapon Lock) на стрелявшего: 3600 тиков = 3 минуты
-                        attackerData.setWeaponLockTicks(3600);
+                        attackerData.setWeaponLockTicks(2400);
                         // Урон при этом не отменяем — жертва пострадает
                     }
                 });
@@ -99,7 +99,7 @@ public class ThingEventHandler {
                         targetNbt.putBoolean("ThingEaten", true);
 
                         // Выдаем Нечто биомассу
-                        data.addBiomass(15);
+                        data.addBiomass(20);
 
                         // Воспроизводим звук чавканья (пока ванильный)
                         player.level().playSound(null, corpse.blockPosition(), net.minecraft.sounds.SoundEvents.PLAYER_BURP, net.minecraft.sounds.SoundSource.PLAYERS, 1.0f, 1.0f);

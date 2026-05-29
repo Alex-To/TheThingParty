@@ -1,0 +1,22 @@
+{
+  "materials": [
+    {
+      "item": {
+        "tag": "forge:slimeballs"
+      },
+      "count": 5
+    },
+    {
+      "item": {
+        "item": "minecraft:blaze_powder"
+      },
+      "count": 1
+    }
+  ],
+  "result": {
+    "type": "ammo",
+    "id": "bf1:fuel",
+    "count": 1
+  },
+  "type": "tacz:gun_smith_table_crafting"
+}

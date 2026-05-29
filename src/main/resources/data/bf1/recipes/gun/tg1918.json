@@ -1,0 +1,48 @@
+{
+  "materials": [
+    {
+      "item": {
+        "tag": "forge:gems/diamond"
+      },
+      "count": 16
+    },
+    {
+      "item": {
+        "tag": "forge:ingots/netherite"
+      },
+      "count": 3
+    },
+    {
+      "item": {
+        "tag": "minecraft:logs"
+      },
+      "count": 128
+    },
+    {
+      "item": {
+        "tag": "forge:ingots/iron"
+      },
+      "count": 256
+    },
+    {
+      "item": {
+        "tag": "forge:ingots/gold"
+      },
+      "count": 32
+    },
+    {
+      "item": {
+        "tag": "forge:rods/blaze"
+      },
+      "count": 8
+    }
+  ],
+  "result": {
+    "type": "gun",
+    "id": "bf1:tg1918",
+    "attachments": {
+      "grip": "bf1:grip_trench_bipods"
+    }
+  },
+  "type": "tacz:gun_smith_table_crafting"
+}
