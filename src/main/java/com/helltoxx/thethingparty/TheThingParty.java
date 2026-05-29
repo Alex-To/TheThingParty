@@ -24,6 +24,7 @@ public class TheThingParty {
         com.helltoxx.thethingparty.init.BlockInit.BLOCKS.register(bus);
         com.helltoxx.thethingparty.init.ItemInit.ITEMS.register(bus);
         com.helltoxx.thethingparty.init.CreativeTabInit.TABS.register(bus);
+        com.helltoxx.thethingparty.init.EntityInit.ENTITIES.register(bus);
 
 
         // Подписываем метод commonSetup на шину событий мода

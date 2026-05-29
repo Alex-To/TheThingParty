@@ -2,15 +2,16 @@ package com.helltoxx.thethingparty.game;
 
 import com.helltoxx.thethingparty.capability.IThingPlayerData;
 import com.helltoxx.thethingparty.capability.ThingPlayerProvider;
+import com.helltoxx.thethingparty.entity.HelicopterEntity;
 import com.helltoxx.thethingparty.network.NetworkHandler;
 import com.mojang.logging.LogUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import org.slf4j.Logger;
 
@@ -54,6 +55,11 @@ public final class GameState {
     private BlockPos evacuationZonePos = null;
     private int evacuationTimerTicks = 0;   // >0 = идёт обратный отсчёт; 0 = не запущен либо истёк
 
+    // Активный вертолёт эвакуации
+    private HelicopterEntity activeHelicopter = null;
+    // После взлёта вертолёта — задержка до объявления исхода (ждём окончание анимации takeoff)
+    private int takeoffOutcomeDelayTicks = 0;
+
     private GameState() {}
 
     public GamePhase getPhase() { return phase; }
@@ -66,6 +72,7 @@ public final class GameState {
     public int getTasksRequired() { return tasksRequired; }
     public int getEvacuationTimerTicks() { return evacuationTimerTicks; }
     public BlockPos getEvacuationZonePos() { return evacuationZonePos; }
+    public boolean hasActiveHelicopter() { return activeHelicopter != null && !activeHelicopter.isRemoved(); }
 
     /**
      * Старт игры. Случайно раздаёт роли по формуле {@link #calculateThingCount}.
@@ -136,6 +143,10 @@ public final class GameState {
         alivePlayers.clear();
         tasksCompleted = 0;
         evacuationTimerTicks = 0;
+        if (activeHelicopter != null && !activeHelicopter.isRemoved()) {
+            activeHelicopter.remove(Entity.RemovalReason.DISCARDED);
+            activeHelicopter = null;
+        }
 
         broadcast(server, Component.literal("[Игра] Остановлена. " + reason).withStyle(ChatFormatting.GRAY));
         LOGGER.info("Game stopped: {}", reason);
@@ -171,7 +182,16 @@ public final class GameState {
             }
             if (evacuationTimerTicks == 0) {
                 triggerEvacuation(server);
-                return; // endGame уже всё переключил
+                // не return — параллельно может тикать takeoffOutcomeDelayTicks (запускается в triggerEvacuation)
+            }
+        }
+
+        // Отложенный исход после старта анимации взлёта.
+        if (takeoffOutcomeDelayTicks > 0) {
+            takeoffOutcomeDelayTicks--;
+            if (takeoffOutcomeDelayTicks == 0) {
+                determineEvacuationOutcome(server);
+                return;
             }
         }
 
@@ -221,14 +241,40 @@ public final class GameState {
 
     private void startEvacuationTimer(MinecraftServer server) {
         evacuationTimerTicks = EVACUATION_TIMER_DURATION_TICKS;
-        Component msg = evacuationZonePos != null
-                ? Component.literal("[Эвакуация] Все задачи выполнены! Вертолёт прибывает через "
+        if (evacuationZonePos == null) {
+            broadcast(server, Component.literal("[Эвакуация] Все задачи выполнены, но зона эвакуации не размещена! Поставьте блок Evacuation Zone.")
+                    .withStyle(ChatFormatting.RED));
+            return;
+        }
+
+        // Спавним вертолёт в LANDING. Анимация ~7 сек, потом entity сам перейдёт в WAITING.
+        spawnHelicopter(server);
+
+        broadcast(server, Component.literal("[Эвакуация] Все задачи выполнены! Вертолёт прибывает через "
                         + (EVACUATION_TIMER_DURATION_TICKS / 20) + " сек. Зона: "
                         + evacuationZonePos.getX() + ", " + evacuationZonePos.getY() + ", " + evacuationZonePos.getZ())
-                        .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
-                : Component.literal("[Эвакуация] Все задачи выполнены, но зона эвакуации не размещена! Поставьте блок Evacuation Zone.")
-                        .withStyle(ChatFormatting.RED);
-        broadcast(server, msg);
+                .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+    }
+
+    /**
+     * Спавнит вертолёт точно над зоной эвакуации (анимация landing двигает его сама).
+     */
+    private void spawnHelicopter(MinecraftServer server) {
+        if (evacuationZonePos == null) return;
+        // Если вертолёт уже летает — переиспользуем
+        if (activeHelicopter != null && !activeHelicopter.isRemoved()) return;
+
+        ServerLevel overworld = server.overworld();
+        HelicopterEntity heli = HelicopterEntity.create(overworld);
+        heli.setPos(
+                evacuationZonePos.getX() + 0.5,
+                evacuationZonePos.getY() + 1.0,
+                evacuationZonePos.getZ() + 0.5
+        );
+        heli.setState(HelicopterEntity.State.LANDING);
+        overworld.addFreshEntity(heli);
+        activeHelicopter = heli;
+        LOGGER.info("Helicopter spawned at {}", evacuationZonePos);
     }
 
     // ============================== ЭВАКУАЦИЯ ==============================
@@ -249,10 +295,8 @@ public final class GameState {
 
     /**
      * Триггерится по истечению таймера эвакуации.
-     * Определяет, кто стоит в радиусе зоны, и выдаёт исход:
-     *  - Нечто (в форме человека) в зоне → Победа Нечто (Инфильтрация), доминирует над Спасением (см. GDD).
-     *  - Иначе любой HUMAN в зоне → Победа Экипажа (Спасение).
-     *  - Никого живого в зоне → Победа Нечто (Эвакуация без выживших).
+     * Переключает вертолёт в TAKEOFF и запускает отложенный исход
+     * (после окончания анимации взлёта в {@link #determineEvacuationOutcome}).
      */
     private void triggerEvacuation(MinecraftServer server) {
         if (evacuationZonePos == null) {
@@ -260,8 +304,35 @@ public final class GameState {
             return;
         }
 
+        if (activeHelicopter != null && !activeHelicopter.isRemoved()) {
+            activeHelicopter.setState(HelicopterEntity.State.TAKEOFF);
+        } else {
+            LOGGER.warn("triggerEvacuation: вертолёт не заспавнен — определяем исход немедленно");
+            determineEvacuationOutcome(server);
+            return;
+        }
+
+        // Анимация takeoff длится ~3.5 сек; даём чуть больше, чтобы entity успел despawn-нуться.
+        takeoffOutcomeDelayTicks = 20 * 4;
+        broadcast(server, Component.literal("[Эвакуация] Вертолёт взлетает!")
+                .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+    }
+
+    /**
+     * Финальное определение исхода. Вызывается после окончания анимации takeoff
+     * (или сразу, если вертолёт не заспавнился).
+     *
+     *  - Нечто (в форме человека) в зоне → Победа Нечто (Инфильтрация), доминирует над Спасением (см. GDD).
+     *  - Иначе любой HUMAN в зоне → Победа Экипажа (Спасение).
+     *  - Никого живого в зоне → Победа Нечто (Эвакуация без выживших).
+     */
+    private void determineEvacuationOutcome(MinecraftServer server) {
+        if (evacuationZonePos == null) {
+            LOGGER.warn("determineEvacuationOutcome: evacuationZonePos == null");
+            return;
+        }
+
         AABB zone = new AABB(evacuationZonePos).inflate(EVACUATION_ZONE_RADIUS);
-        List<ServerPlayer> playersInZone = new ArrayList<>();
         boolean thingInfiltrated = false;
         boolean humanEvacuated = false;
 
@@ -270,7 +341,6 @@ public final class GameState {
             if (p == null) continue;
             if (!zone.contains(p.position())) continue;
 
-            playersInZone.add(p);
             var capOpt = p.getCapability(ThingPlayerProvider.THING_DATA).resolve();
             if (capOpt.isEmpty()) continue;
             IThingPlayerData data = capOpt.get();
@@ -282,10 +352,11 @@ public final class GameState {
             }
         }
 
-        // Воспроизводим "взлёт" для всех в зоне (placeholder-эффекты)
-        for (ServerPlayer p : playersInZone) {
-            evacuatePlayer(p);
+        // Зачищаем активный вертолёт, если ещё не despawn-нулся.
+        if (activeHelicopter != null && !activeHelicopter.isRemoved()) {
+            activeHelicopter.remove(Entity.RemovalReason.DISCARDED);
         }
+        activeHelicopter = null;
 
         if (thingInfiltrated) {
             endGame(server, Component.literal("[Победа Нечто] Инфильтрация: Нечто улетело вместе с экипажем!")
@@ -297,20 +368,6 @@ public final class GameState {
             endGame(server, Component.literal("[Победа Нечто] Вертолёт улетел пустым.")
                     .withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD));
         }
-    }
-
-    /**
-     * Hook "игрок улетает". Сейчас — заглушка: levitation + неуязвимость на 3 сек.
-     * Когда будет модель/анимация — заменим тело: спавн entity-вертолёта, startRiding и т.п.
-     */
-    private static void evacuatePlayer(ServerPlayer p) {
-        p.addEffect(new MobEffectInstance(MobEffects.LEVITATION, 60, 4, false, false, false));
-        p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 60, 4, false, false, false));
-        p.sendSystemMessage(Component.literal("Ты эвакуирован!").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD));
-        // TODO(animation): сюда заменить заглушку на:
-        //  - спавн entity Helicopter с GeckoLib моделью у позиции игрока
-        //  - p.startRiding(helicopter)
-        //  - helicopter.triggerAnim("takeoff")
     }
 
     /**
