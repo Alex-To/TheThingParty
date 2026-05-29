@@ -157,6 +157,10 @@ public class ThingEventHandler {
                         System.out.println("[THE THING PARTY DEBUG] Таймер монстра: " + time);
                     }
 
+                    // Добавляет баффы
+                    player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED));
+                    player.addEffect(new MobEffectInstance(MobEffects.JUMP));
+
                     // Вывод игроку на экран
                     if (time == 600) {
                         player.displayClientMessage(net.minecraft.network.chat.Component.literal("§e[Таймер] Осталось 30 секунд..."), true);
@@ -173,6 +177,11 @@ public class ThingEventHandler {
                     data.setMonsterForm(false);
                     // ВКЛЮЧАЕМ ФЛАГ СИНХРОНИЗАЦИИ ДЛЯ КЛИЕНТА
                     needSync = true;
+
+                    // Снимаем баффы
+                    player.removeEffect(net.minecraft.world.effect.MobEffects.MOVEMENT_SPEED);
+                    player.removeEffect(net.minecraft.world.effect.MobEffects.JUMP);
+
                     // Звук превращения обратно
                     player.level().playSound(null, player.blockPosition(), net.minecraft.sounds.SoundEvents.ZOMBIE_VILLAGER_CONVERTED, net.minecraft.sounds.SoundSource.PLAYERS, 1.0f, 1.0f);
                     player.displayClientMessage(net.minecraft.network.chat.Component.literal("§a[Таймер] Время вышло! Вы вернулись в человеческую форму."), true);
