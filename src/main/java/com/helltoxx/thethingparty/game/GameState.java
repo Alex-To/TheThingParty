@@ -12,6 +12,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.AABB;
 import org.slf4j.Logger;
 
@@ -41,6 +42,12 @@ public final class GameState {
     public static final double EVACUATION_ZONE_RADIUS = 4.0;            // AABB-радиус вокруг блока
     public static final int DEFAULT_TASKS_REQUIRED = 3;
 
+    // Смещение модели вертолёта от центра блока зоны эвакуации (в блоках).
+    // Зона сама не двигается — это только визуальная посадочная позиция вертолёта.
+    public static final double HELICOPTER_OFFSET_X = -3.0;
+    public static final double HELICOPTER_OFFSET_Y = 0.0;
+    public static final double HELICOPTER_OFFSET_Z = 0.0;
+
     private static final GameState INSTANCE = new GameState();
     public static GameState get() { return INSTANCE; }
 
@@ -59,6 +66,8 @@ public final class GameState {
     private HelicopterEntity activeHelicopter = null;
     // После взлёта вертолёта — задержка до объявления исхода (ждём окончание анимации takeoff)
     private int takeoffOutcomeDelayTicks = 0;
+    // Сообщение об исходе, зафиксированное в момент triggerEvacuation; отыграется в determineEvacuationOutcome.
+    private Component pendingEvacuationOutcome = null;
 
     private GameState() {}
 
@@ -143,6 +152,8 @@ public final class GameState {
         alivePlayers.clear();
         tasksCompleted = 0;
         evacuationTimerTicks = 0;
+        takeoffOutcomeDelayTicks = 0;
+        pendingEvacuationOutcome = null;
         if (activeHelicopter != null && !activeHelicopter.isRemoved()) {
             activeHelicopter.remove(Entity.RemovalReason.DISCARDED);
             activeHelicopter = null;
@@ -267,9 +278,9 @@ public final class GameState {
         ServerLevel overworld = server.overworld();
         HelicopterEntity heli = HelicopterEntity.create(overworld);
         heli.setPos(
-                evacuationZonePos.getX() + 0.5,
-                evacuationZonePos.getY() + 1.0,
-                evacuationZonePos.getZ() + 0.5
+                evacuationZonePos.getX() + 0.5 + HELICOPTER_OFFSET_X,
+                evacuationZonePos.getY() + 1.0 + HELICOPTER_OFFSET_Y,
+                evacuationZonePos.getZ() + 0.5 + HELICOPTER_OFFSET_Z
         );
         heli.setState(HelicopterEntity.State.LANDING);
         overworld.addFreshEntity(heli);
@@ -295,13 +306,56 @@ public final class GameState {
 
     /**
      * Триггерится по истечению таймера эвакуации.
-     * Переключает вертолёт в TAKEOFF и запускает отложенный исход
-     * (после окончания анимации взлёта в {@link #determineEvacuationOutcome}).
+     * В момент таймера=0 фиксирует исход (кто в зоне), переводит эвакуированных в spectator,
+     * запускает анимацию TAKEOFF и отложенный {@link #determineEvacuationOutcome}, который
+     * объявит уже зафиксированный исход после окончания анимации.
      */
     private void triggerEvacuation(MinecraftServer server) {
         if (evacuationZonePos == null) {
             LOGGER.warn("triggerEvacuation: evacuationZonePos == null");
             return;
+        }
+
+        // Фиксируем "кто в зоне" прямо сейчас — после spectator игроки могут разлететься,
+        // и AABB-проверка через 4 сек дала бы неверный результат.
+        AABB zone = new AABB(evacuationZonePos).inflate(EVACUATION_ZONE_RADIUS);
+        boolean thingInfiltrated = false;
+        boolean humanEvacuated = false;
+        List<ServerPlayer> evacuatedPlayers = new ArrayList<>();
+
+        for (UUID aliveId : alivePlayers) {
+            ServerPlayer p = server.getPlayerList().getPlayer(aliveId);
+            if (p == null) continue;
+            if (!zone.contains(p.position())) continue;
+
+            evacuatedPlayers.add(p);
+
+            var capOpt = p.getCapability(ThingPlayerProvider.THING_DATA).resolve();
+            if (capOpt.isEmpty()) continue;
+            IThingPlayerData data = capOpt.get();
+
+            if (data.getRole() == IThingPlayerData.Role.THING && !data.isMonsterForm()) {
+                thingInfiltrated = true;
+            } else if (data.getRole() == IThingPlayerData.Role.HUMAN) {
+                humanEvacuated = true;
+            }
+        }
+
+        // Перевод в spectator всех, кто был в зоне на момент таймера=0.
+        for (ServerPlayer p : evacuatedPlayers) {
+            p.setGameMode(GameType.SPECTATOR);
+        }
+
+        // Сохраняем исход для отложенного объявления.
+        if (thingInfiltrated) {
+            pendingEvacuationOutcome = Component.literal("[Победа Нечто] Инфильтрация: Нечто улетело вместе с экипажем!")
+                    .withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD);
+        } else if (humanEvacuated) {
+            pendingEvacuationOutcome = Component.literal("[Победа Экипажа] Спасение: вертолёт увёз выживших!")
+                    .withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD);
+        } else {
+            pendingEvacuationOutcome = Component.literal("[Победа Нечто] Вертолёт улетел пустым.")
+                    .withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD);
         }
 
         if (activeHelicopter != null && !activeHelicopter.isRemoved()) {
@@ -319,55 +373,23 @@ public final class GameState {
     }
 
     /**
-     * Финальное определение исхода. Вызывается после окончания анимации takeoff
-     * (или сразу, если вертолёт не заспавнился).
-     *
-     *  - Нечто (в форме человека) в зоне → Победа Нечто (Инфильтрация), доминирует над Спасением (см. GDD).
-     *  - Иначе любой HUMAN в зоне → Победа Экипажа (Спасение).
-     *  - Никого живого в зоне → Победа Нечто (Эвакуация без выживших).
+     * Финальное объявление исхода после окончания анимации takeoff.
+     * Сам исход и spectator уже зафиксированы в {@link #triggerEvacuation}.
      */
     private void determineEvacuationOutcome(MinecraftServer server) {
-        if (evacuationZonePos == null) {
-            LOGGER.warn("determineEvacuationOutcome: evacuationZonePos == null");
-            return;
-        }
-
-        AABB zone = new AABB(evacuationZonePos).inflate(EVACUATION_ZONE_RADIUS);
-        boolean thingInfiltrated = false;
-        boolean humanEvacuated = false;
-
-        for (UUID aliveId : alivePlayers) {
-            ServerPlayer p = server.getPlayerList().getPlayer(aliveId);
-            if (p == null) continue;
-            if (!zone.contains(p.position())) continue;
-
-            var capOpt = p.getCapability(ThingPlayerProvider.THING_DATA).resolve();
-            if (capOpt.isEmpty()) continue;
-            IThingPlayerData data = capOpt.get();
-
-            if (data.getRole() == IThingPlayerData.Role.THING && !data.isMonsterForm()) {
-                thingInfiltrated = true;
-            } else if (data.getRole() == IThingPlayerData.Role.HUMAN) {
-                humanEvacuated = true;
-            }
-        }
-
         // Зачищаем активный вертолёт, если ещё не despawn-нулся.
         if (activeHelicopter != null && !activeHelicopter.isRemoved()) {
             activeHelicopter.remove(Entity.RemovalReason.DISCARDED);
         }
         activeHelicopter = null;
 
-        if (thingInfiltrated) {
-            endGame(server, Component.literal("[Победа Нечто] Инфильтрация: Нечто улетело вместе с экипажем!")
-                    .withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD));
-        } else if (humanEvacuated) {
-            endGame(server, Component.literal("[Победа Экипажа] Спасение: вертолёт увёз выживших!")
-                    .withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD));
-        } else {
-            endGame(server, Component.literal("[Победа Нечто] Вертолёт улетел пустым.")
-                    .withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD));
+        Component outcome = pendingEvacuationOutcome;
+        pendingEvacuationOutcome = null;
+        if (outcome == null) {
+            LOGGER.warn("determineEvacuationOutcome: pendingEvacuationOutcome == null — исход не зафиксирован");
+            return;
         }
+        endGame(server, outcome);
     }
 
     /**

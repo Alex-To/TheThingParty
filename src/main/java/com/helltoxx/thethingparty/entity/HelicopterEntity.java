@@ -22,15 +22,12 @@ import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.core.object.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Entity вертолёта эвакуации, рендерящийся через GeckoLib.
  *
  * Жизненный цикл управляется сервером:
  *  1. LANDING  — анимация ~7 сек, затем переключается на WAITING.
- *  2. WAITING  — idle loop, игроки могут зайти ({@link #interact}).
+ *  2. WAITING  — idle loop.
  *  3. TAKEOFF  — анимация ~3.5 сек, затем despawn.
  *
  * Состояние синхронизируется через {@link SynchedEntityData}; клиент перечитывает
@@ -97,9 +94,6 @@ public class HelicopterEntity extends Entity implements GeoAnimatable {
             }
             case TAKEOFF -> {
                 if (elapsed >= TAKEOFF_DURATION_TICKS) {
-                    for (Entity p : new ArrayList<>(this.getPassengers())) {
-                        p.stopRiding();
-                    }
                     this.remove(Entity.RemovalReason.DISCARDED);
                 }
             }
@@ -116,13 +110,7 @@ public class HelicopterEntity extends Entity implements GeoAnimatable {
 
     @Override
     public InteractionResult interact(Player player, InteractionHand hand) {
-        if (getState() != State.WAITING) return InteractionResult.PASS;
-        if (player.isPassenger()) return InteractionResult.PASS;
-        if (player.getVehicle() != null) return InteractionResult.PASS;
-        if (!this.level().isClientSide) {
-            player.startRiding(this);
-        }
-        return InteractionResult.sidedSuccess(this.level().isClientSide);
+        return InteractionResult.PASS;
     }
 
     @Override
