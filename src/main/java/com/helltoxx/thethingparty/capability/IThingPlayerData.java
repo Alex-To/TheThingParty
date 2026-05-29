@@ -33,6 +33,9 @@ public interface IThingPlayerData {
     int getTransformCooldownTicks();
     void setTransformCooldownTicks(int ticks);
 
+    int getMonsterTime();
+    void setMonsterTime(int ticks);
+
     void copyFrom(IThingPlayerData source);
     void saveNBTData(CompoundTag nbt);
     void loadNBTData(CompoundTag nbt);

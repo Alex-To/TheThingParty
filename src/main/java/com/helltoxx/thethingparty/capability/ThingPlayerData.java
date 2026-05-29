@@ -9,6 +9,7 @@ public class ThingPlayerData implements IThingPlayerData {
     private int weaponLockTicks = 0;
     private int transformTicks = 0;
     private int transformCooldownTicks = 0;
+    private int monsterTime = 0;
 
     @Override
     public Role getRole() { return role; }
@@ -19,6 +20,15 @@ public class ThingPlayerData implements IThingPlayerData {
     public boolean isMonsterForm() { return isMonsterForm; }
     @Override
     public void setMonsterForm(boolean isMonsterForm) { this.isMonsterForm = isMonsterForm; }
+
+    @Override
+    public int getMonsterTime() {
+        return this.monsterTime;
+    }
+    @Override
+    public void setMonsterTime(int ticks) {
+        this.monsterTime = ticks;
+    }
 
     @Override
     public int getBiomass() { return biomass; }
@@ -61,6 +71,7 @@ public class ThingPlayerData implements IThingPlayerData {
         nbt.putBoolean("IsMonsterForm", isMonsterForm);
         nbt.putInt("Biomass", biomass);
         nbt.putInt("WeaponLockTicks", weaponLockTicks);
+        nbt.putInt("MonsterTime", monsterTime);
     }
 
     @Override
@@ -69,5 +80,6 @@ public class ThingPlayerData implements IThingPlayerData {
         this.isMonsterForm = nbt.getBoolean("IsMonsterForm");
         this.biomass = nbt.getInt("Biomass");
         this.weaponLockTicks = nbt.getInt("WeaponLockTicks");
+        this.monsterTime = nbt.getInt("MonsterTime");
     }
 }

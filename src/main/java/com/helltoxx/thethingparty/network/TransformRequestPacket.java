@@ -62,6 +62,13 @@ public class TransformRequestPacket {
             return;
         }
 
+        if (data.getMonsterTime() < 0) {
+            data.setMonsterForm(false);
+            data.setTransformTicks(0);
+            data.setTransformCooldownTicks(TRANSFORM_COOLDOWN_TICKS);
+            player.sendSystemMessage(Component.literal("§7[The Thing Party] Возврат в человеческую форму."));
+        }
+
         if (data.isMonsterForm()) {
             // Возврат в человека - бесплатно, но кулдаун стартует.
             data.setMonsterForm(false);
@@ -79,6 +86,8 @@ public class TransformRequestPacket {
             data.setBiomass(data.getBiomass() - TRANSFORM_BIOMASS_COST);
             data.setMonsterForm(true);
             data.setTransformTicks(TRANSFORM_DURATION_TICKS);
+            data.setMonsterTime(800); // Таймер активной формы (40 секунд)
+            System.out.println("[THE THING PARTY DEBUG] Игрок трансформировался. Установлено время 800.");
             // Кулдаун накладывается только при возврате - чтобы вход в форму был "взрывным".
             player.sendSystemMessage(Component.literal(
                     "§4[The Thing Party] Трансформация в Нечто. Биомасса: " + data.getBiomass()));

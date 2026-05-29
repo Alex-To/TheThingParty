@@ -1,10 +1,10 @@
 package com.helltoxx.thethingparty.events;
 
 import net.minecraft.nbt.CompoundTag;
+import com.helltoxx.thethingparty.capability.IThingPlayerData;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import com.helltoxx.thethingparty.capability.IThingPlayerData;
 import com.helltoxx.thethingparty.capability.ThingPlayerProvider;
 import com.helltoxx.thethingparty.network.NetworkHandler;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -145,6 +145,38 @@ public class ThingEventHandler {
             if (data.getTransformCooldownTicks() > 0) {
                 data.setTransformCooldownTicks(data.getTransformCooldownTicks() - 1);
                 if (data.getTransformCooldownTicks() == 0) needSync = true;
+            }
+
+            if (data.isMonsterForm()) {
+                if (data.getMonsterTime() > 0) {
+                    data.setMonsterTime(data.getMonsterTime() - 1);
+                    int time = data.getMonsterTime();
+
+                    // Дебаг: выводим в консоль каждую секунду
+                    if (time % 20 == 0) {
+                        System.out.println("[THE THING PARTY DEBUG] Таймер монстра: " + time);
+                    }
+
+                    // Вывод игроку на экран
+                    if (time == 600) {
+                        player.displayClientMessage(net.minecraft.network.chat.Component.literal("§e[Таймер] Осталось 30 секунд..."), true);
+                    } else if (time == 400) {
+                        player.displayClientMessage(net.minecraft.network.chat.Component.literal("§6[Таймер] Осталось 20 секунд..."), true);
+                    } else if (time == 200) {
+                        player.displayClientMessage(net.minecraft.network.chat.Component.literal("§c[Таймер] Осталось 10 секунд!"), true);
+                    }
+                }
+
+                // Срабатывание нуля ДОЛЖНО быть внутри проверки isMonsterForm()
+                if (data.getMonsterTime() == 0) {
+                    System.out.println("[THE THING PARTY DEBUG] ТАЙМЕР ВЫШЕЛ! Превращаем обратно.");
+                    data.setMonsterForm(false);
+                    // ВКЛЮЧАЕМ ФЛАГ СИНХРОНИЗАЦИИ ДЛЯ КЛИЕНТА
+                    needSync = true;
+                    // Звук превращения обратно
+                    player.level().playSound(null, player.blockPosition(), net.minecraft.sounds.SoundEvents.ZOMBIE_VILLAGER_CONVERTED, net.minecraft.sounds.SoundSource.PLAYERS, 1.0f, 1.0f);
+                    player.displayClientMessage(net.minecraft.network.chat.Component.literal("§a[Таймер] Время вышло! Вы вернулись в человеческую форму."), true);
+                }
             }
 
             if (needSync && player instanceof ServerPlayer sp) {
